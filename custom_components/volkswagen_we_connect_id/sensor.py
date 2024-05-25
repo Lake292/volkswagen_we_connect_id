@@ -414,6 +414,16 @@ SENSORS: tuple[VolkswagenIdEntityDescription, ...] = (
         ].temperatureHvBatteryMin_K.value - 273.15,
     ),
     VolkswagenIdEntityDescription(
+        name="Outside Temperature",
+        key="temperatureOutside",
+        icon="mdi:thermometer",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        value=lambda data: data["measurements"][
+            "temperatureOutsideStatus"
+        ].temperatureOutside_K.value - 273.15,
+    ),
+    VolkswagenIdEntityDescription(
         name="HV Battery Temperature Max",
         key="hvBatteryTemperatureMax",
         icon="mdi:thermometer",
