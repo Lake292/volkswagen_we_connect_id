@@ -51,7 +51,7 @@ SENSORS: tuple[VolkswagenIdBinaryEntityDescription, ...] = (
     ),
     VolkswagenIdBinaryEntityDescription(
         key="zoneFrontLeftEnabled",
-        name="Zone Front Left Enabled",
+        name="Seat Heater Front Left Enabled",
         icon="mdi:car-seat",
         value=lambda data: data["climatisation"][
             "climatisationSettings"
@@ -59,11 +59,27 @@ SENSORS: tuple[VolkswagenIdBinaryEntityDescription, ...] = (
     ),
     VolkswagenIdBinaryEntityDescription(
         key="zoneFrontRightEnabled",
-        name="Zone Front Right Enabled",
+        name="Seat Heater Front Right Enabled",
         icon="mdi:car-seat",
         value=lambda data: data["climatisation"][
             "climatisationSettings"
         ].zoneFrontRightEnabled,
+    ),
+    VolkswagenIdBinaryEntityDescription(
+        key="zoneRearLeftEnabled",
+        name="Seat Heater Rear Left Enabled",
+        icon="mdi:car-seat",
+        value=lambda data: data["climatisation"][
+            "climatisationSettings"
+        ].zoneRearLeftEnabled,
+    ),
+    VolkswagenIdBinaryEntityDescription(
+        key="zoneRearRightEnabled",
+        name="Seat Heater Rear Right Enabled",
+        icon="mdi:car-seat",
+        value=lambda data: data["climatisation"][
+            "climatisationSettings"
+        ].zoneRearRightEnabled,
     ),
     VolkswagenIdBinaryEntityDescription(
         key="windowHeatingEnabled",

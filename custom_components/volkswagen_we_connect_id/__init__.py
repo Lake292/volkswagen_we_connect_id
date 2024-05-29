@@ -8,7 +8,7 @@ import logging
 import threading
 import time
 
-from weconnect import weconnect
+from weconnect import weconnect, addressable
 from weconnect.elements.vehicle import Vehicle
 from weconnect.elements.control_operation import ControlOperation
 
@@ -70,6 +70,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         domain_entry: DomainEntry = hass.data[DOMAIN][entry.entry_id]
         domain_entry.vehicles = vehicles
+        # TEST
+        for vehicle in vehicles:
+            for index in ['statusWithBadge', 'car']:
+                image = vehicle.pictures[index]
+                if isinstance(image, addressable.AddressableAttribute):
+                    image.saveToFile('/config/www/tmp/' + index + '.png')
+
         return vehicles
 
     coordinator = DataUpdateCoordinator[list[Vehicle]](
@@ -81,7 +88,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             seconds=entry.data.get("update_interval") or DEFAULT_UPDATE_INTERVAL_SECONDS,
         ),
     )
-
+ 
     hass.data[DOMAIN][entry.entry_id] = DomainEntry(coordinator, _we_connect, [])
 
     # Fetch initial data so we have data when entities subscribe
@@ -220,7 +227,7 @@ def update(
         elapsed = time.monotonic() - _last_successful_api_update_timestamp
         if elapsed <= 24 and api is _last_we_connect_api:
             return
-        api.update(updatePictures=False)
+        api.update()
         _last_successful_api_update_timestamp = time.monotonic()
         _last_we_connect_api = api
 
