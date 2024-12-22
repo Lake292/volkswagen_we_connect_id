@@ -21,7 +21,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL_SECONDS, DEFAULT_IMAGE_UPDATE_INTERVAL_SECONDS
+from .const import DOMAIN, DEFAULT_UPDATE_INTERVAL_SECONDS
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
