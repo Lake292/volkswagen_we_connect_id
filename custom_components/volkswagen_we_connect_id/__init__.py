@@ -12,7 +12,7 @@ from typing import Any
 
 from weconnect import weconnect, addressable
 from weconnect.elements.vehicle import Vehicle
-from weconnect.elements.control_operation import ControlOperation
+from weconnect.elements.control_operation import ControlOperation, AccessControlOperation
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -61,6 +61,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _we_connect = get_we_connect_api(
         username=get_parameter(entry, "username"),
         password=get_parameter(entry, "password"),
+        spin=get_parameter(entry, "spin")
     )
 
     await hass.async_add_executor_job(_we_connect.login)
@@ -125,6 +126,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.error("Cannot send charging request to car")
 
     @callback
+    async def volkswagen_id_lock_unlock_car(call: ServiceCall) -> None:
+
+        vin = call.data["vin"]
+        lock_unlock = call.data["lock_unlock"]
+
+        if (
+            await hass.async_add_executor_job(
+                lock_unlock_car,
+                vin,
+                _we_connect,
+                lock_unlock,
+            )
+            is False
+        ):
+            _LOGGER.error("Cannot send locking request to car")
+
+    @callback
     async def volkswagen_id_set_climatisation(call: ServiceCall) -> None:
 
         vin = call.data["vin"]
@@ -184,7 +202,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.services.async_register(
         DOMAIN, "volkswagen_id_start_stop_charging", volkswagen_id_start_stop_charging
     )
-
+    hass.services.async_register(
+        DOMAIN, "volkswagen_id_lock_unlock_car", volkswagen_id_lock_unlock_car
+    )
     hass.services.async_register(
         DOMAIN, "volkswagen_id_set_climatisation", volkswagen_id_set_climatisation
     )
@@ -202,11 +222,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 @functools.lru_cache(maxsize=1)
-def get_we_connect_api(username: str, password: str) -> weconnect.WeConnect:
+def get_we_connect_api(username: str, password: str, spin: str) -> weconnect.WeConnect:
     """Return a cached weconnect api object, shared with the config flow."""
     return weconnect.WeConnect(
         username=username,
         password=password,
+        spin = spin,
         updateAfterLogin=False,
         loginOnInit=False,
         timeout=10,
@@ -278,6 +299,38 @@ def start_stop_charging(
                     return False
     return True
 
+def lock_unlock_car(
+    call_data_vin, api: weconnect.WeConnect, operation: str
+) -> bool:
+    """Start of stop charging of your volkswagen."""
+
+    for vin, vehicle in api.vehicles.items():
+        if vin == call_data_vin:
+
+            if operation == "lock":
+                try:
+                    if (
+                        vehicle.controls.accessControl is not None
+                        and vehicle.controls.accessControl.enabled
+                    ):
+                        vehicle.controls.accessControl.value = AccessControlOperation.LOCK
+                        _LOGGER.info("Sent lock call to the car")
+                except Exception as exc:
+                    _LOGGER.error("Failed to send request to car - %s", exc)
+                    return False
+
+            if operation == "unlock":
+                try:
+                    if (
+                        vehicle.controls.accessControl is not None
+                        and vehicle.controls.accessControl.enabled
+                    ):
+                        vehicle.controls.accessControl.value = AccessControlOperation.UNLOCK
+                        _LOGGER.info("Sent unlock call to the car")
+                except Exception as exc:
+                    _LOGGER.error("Failed to send request to car - %s", exc)
+                    return False
+    return True
 
 def set_ac_charging_speed(
     call_data_vin, api: weconnect.WeConnect, charging_speed

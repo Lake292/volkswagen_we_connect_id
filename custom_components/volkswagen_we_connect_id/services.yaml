@@ -19,6 +19,27 @@ volkswagen_id_start_stop_charging:
             - "start"
             - "stop"
 
+volkswagen_id_lock_unlock_car:
+  name: Volkswagen ID Lock or Unlock Car
+  description: Locks or Unlocks Volkswagen ID cars.
+  fields:
+    vin:
+      name: VIN
+      description: Vehicle identification number for the car.
+      required: true
+      example: WVGZZZA1ZMP001337
+      selector:
+        text:
+    lock_unlock:
+      name: Lock or Unlock
+      description: Locks or Unlocks the car.
+      required: true
+      selector:
+        select:
+          options:
+            - "lock"
+            - "unlock"
+
 volkswagen_id_set_climatisation:
   name: Volkswagen ID Set Climatisation
   description: Sets climatisation in Volkswagen ID cars.

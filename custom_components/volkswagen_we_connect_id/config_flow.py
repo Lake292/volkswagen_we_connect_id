@@ -21,6 +21,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required("username"): str,
         vol.Required("password"): str,
+        vol.Optional("spin", default = None): str,
         vol.Optional(
             "update_interval", default=DEFAULT_UPDATE_INTERVAL_SECONDS
         ): vol.All(vol.Coerce(int), vol.Range(min=MINIMUM_UPDATE_INTERVAL_SECONDS)),
@@ -34,6 +35,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     we_connect = get_we_connect_api(
         username=data["username"],
         password=data["password"],
+        spin=data["spin"]
     )
 
     await hass.async_add_executor_job(we_connect.login)
@@ -114,6 +116,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Required("username", default=get_parameter(self.config_entry, "username")): str,
                     vol.Required("password", default=get_parameter(self.config_entry, "password")): str,
+                    vol.Optional("spin", default=get_parameter(self.config_entry, "spin")): str,
                     vol.Optional(
                         "update_interval", default=get_parameter(self.config_entry, "update_interval", DEFAULT_UPDATE_INTERVAL_SECONDS)
                     ): vol.All(vol.Coerce(int), vol.Range(min=MINIMUM_UPDATE_INTERVAL_SECONDS)),

@@ -13,6 +13,7 @@ from . import (
     set_ac_charging_speed,
     set_climatisation,
     start_stop_charging,
+    lock_unlock_car,
 )
 from .const import DOMAIN
 
@@ -34,6 +35,8 @@ async def async_setup_entry(
         entities.append(VolkswagenIDToggleACChargeSpeed(vehicle, we_connect))
         entities.append(VolkswagenIDStartChargingButton(vehicle, we_connect))
         entities.append(VolkswagenIDStopChargingButton(vehicle, we_connect))
+        entities.append(VolkswagenIDLockCarButton(vehicle, we_connect))
+        entities.append(VolkswagenIDUnlockCarButton(vehicle, we_connect))
 
     async_add_entities(entities)
 
@@ -134,3 +137,35 @@ class VolkswagenIDStopChargingButton(ButtonEntity):
     def press(self) -> None:
         """Handle the button press."""
         start_stop_charging(self._vehicle.vin.value, self._we_connect, "stop")
+
+class VolkswagenIDLockCarButton(ButtonEntity):
+    """Button for locking the car."""
+
+    def __init__(self, vehicle, we_connect) -> None:
+        """Initialize VolkswagenID vehicle sensor."""
+        self._attr_name = f"{vehicle.nickname} Lock Car"
+        self._attr_unique_id = f"{vehicle.vin}-lock_car"
+        self._attr_icon = "mdi:play-circle-outline"
+        self._we_connect = we_connect
+        self._vehicle = vehicle
+
+    def press(self) -> None:
+        """Handle the button press."""
+        lock_unlock_car(self._vehicle.vin.value, self._we_connect, "lock")
+
+
+class VolkswagenIDUnlockCarButton(ButtonEntity):
+    """Button for stop charging."""
+
+    def __init__(self, vehicle, we_connect) -> None:
+        """Initialize VolkswagenID vehicle sensor."""
+        self._attr_name = f"{vehicle.nickname} Unlock Car"
+        self._attr_unique_id = f"{vehicle.vin}-unlock_car"
+        self._attr_icon = "mdi:stop-circle-outline"
+        self._we_connect = we_connect
+        self._vehicle = vehicle
+
+    def press(self) -> None:
+        """Handle the button press."""
+        lock_unlock_car(self._vehicle.vin.value, self._we_connect, "unlock")
+
